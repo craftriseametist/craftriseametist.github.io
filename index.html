@@ -391,9 +391,9 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
         card.className = 'rise-event-card animate__animated animate__zoomIn';
         card.innerHTML = `
             <img src="/images/icons/logo.svg" width="50" style="margin-bottom:15px;">
-            <h2>AMETİST V2.3 ÖZEL ÇARKI</h2>
-            <p style="color:#aaa;">Sunucumuzun 2026 yılına özel etkinliğine katıl, anında Ametist Coin kazan!</p>
-            <button onclick="openRiseWheel()" class="btn-rise-spin">ÖDÜLÜÜ AL</button>
+            <h2>SURVIVAL AMETİST V2.3 ÖZEL ÇARKI</h2>
+            <p style="color:#aaa;">Sunucumuzun 2026 yılına özel etkinliğine katıl, anında Survival Ametistte dinar kazan!</p>
+            <button onclick="openRiseWheel()" class="btn-rise-spin">ÖDÜLÜNÜ AL</button>
         `;
         target.prepend(card);
         drawRiseWheel();
@@ -406,7 +406,7 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
     function drawRiseWheel() {
         const cvs = document.getElementById('riseCanvas');
         const ctx = cvs.getContext('2d');
-        const prizes = ["1 Milyon Dinar", "2 Milyon Dinar", "3 Milyon Dinar", "4 Milyon Dinar", "5 Milyon Dinar", "10 Milyon Dinar"];
+        const prizes = ["1 Milyon", "2 Milyon", "3 Milyon", "4 Milyon", "5 Milyon", "10 Milyon"];
         // Turuncu ve tonları (CraftRise renkleri)
         const colors = ["#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a"];
         const arc = (2 * Math.PI) / 6;

